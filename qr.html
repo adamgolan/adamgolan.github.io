@@ -29,6 +29,11 @@
                     .qrcode($('.div_qr_print').data("qr"))
                     ;
             }
+            else {
+                $("body").append(
+                    "<a href=\"javascript:location.href='https://adamgolan.github.io/qr.html#'+location.href\" title=\"drag and drop to bookmarks toolbar\">qr bookmarklet</a"
+                );                    
+            }
         }
         window.onhashchange = renderqr;
         renderqr();
