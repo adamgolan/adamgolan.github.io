@@ -29,17 +29,21 @@ if (!navigator.getUserMedia) {
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 }
 
-navigator.mediaDevices.getUserMedia({ audio: true }).then(
-    function (stream) {
-        var mic = audioCtx.createMediaStreamSource(stream);
-        mic.connect(analyser);
-
-        requestAnimationFrame(draw);
-
-    },
-    function () {
-        alert('Error capturing audio.');
-    });
+document.getElementById('button').addEventListener('click', function () {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(
+        function (stream) {
+            audioCtx.resume().then(() => { //chrome...
+                var mic = audioCtx.createMediaStreamSource(stream);
+                mic.connect(analyser);
+                requestAnimationFrame(draw);
+                document.getElementById('button').style = 'display: none;';
+                document.getElementById('container').style = '';
+            });
+        },
+        function () {
+            alert('Error capturing audio.');
+        });
+});
 
 function draw() {
     analyser.getByteFrequencyData(frequencyArray);
@@ -63,7 +67,7 @@ function draw() {
     for (let i = 0; i < analyser.frequencyBinCount; i++) {
         let frequency = i * audioCtx.sampleRate / analyser.fftSize;
         if (i == pureNoteBucket) { //this is probably what we're trying to tune to
-            canvasCtx.fillStyle = 'rgb(255,100,100)';
+            canvasCtx.fillStyle = 'rgb(255,120,120)';
         }
         else if (frequency > notes.C && frequency < 2 * notes.C) { //C4 to C5 brighter
             canvasCtx.fillStyle = 'rgb(200,7,7)';
@@ -82,18 +86,6 @@ function detectPitch(frequencyArray) {
     let maxBucket = frequencyArray.indexOf(Math.max(...frequencyArray));
 
     return maxBucket * audioCtx.sampleRate / analyser.fftSize;
-
-}
-
-function detectPitch2(frequencyArray) {
-    for(var i = 1; i < frequencyArray.length - 1; i++) {
-        if(frequencyArray[i] > 0.8
-            && frequencyArray[i-1] < frequencyArray[i]
-            && frequencyArray[i+1] < frequencyArray[i]
-        ) {
-                return i * audioCtx.sampleRate / analyser.fftSize;
-            }
-    }
 }
 
 function noteFromPitch(frequency) {
@@ -136,11 +128,11 @@ const notes = (function () {
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
-    .then(reg => {
-      // registration worked
-      console.log('Registration succeeded. Scope is ' + reg.scope);
-    }).catch(error => {
-      // registration failed
-      console.log('Registration failed with ' + error);
-    });
+        .then(reg => {
+            // registration worked
+            console.log('Registration succeeded. Scope is ' + reg.scope);
+        }).catch(error => {
+            // registration failed
+            console.log('Registration failed with ' + error);
+        });
 }
